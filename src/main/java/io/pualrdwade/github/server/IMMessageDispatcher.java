@@ -112,7 +112,6 @@ public final class IMMessageDispatcher implements Runnable {
             return;
         }
         IMnettyChatProtocol.Message message = channel.attr(attributeKey).get();
-        System.out.println("Server:doDispatch chatInfo:" + channel);
         // TODO: 2019/3/26 重构聊天模块,提取出单独的业务模块
         switch (message.getMessageType()) {
             case CHAT: {

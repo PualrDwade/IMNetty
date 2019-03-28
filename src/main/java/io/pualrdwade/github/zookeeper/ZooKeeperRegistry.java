@@ -52,7 +52,7 @@ public class ZooKeeperRegistry implements ServiceRegistry {
             //创建地址节点
             String addressPath = servicePath + "/address-";
             String addressNode = zk.create(addressPath, serviceAddress.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-            zk.close();
+//            zk.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

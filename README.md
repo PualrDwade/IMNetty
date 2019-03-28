@@ -1,6 +1,6 @@
 # IMNetty
 
-![](https://img.shields.io/badge/语言-java-red.svg)![](https://img.shields.io/badge/技术-zookeeper|rabbitMQ|redis-green.svg)![](https://img.shields.io/badge/依赖-netty|protobuf-orange.svg)
+![](https://img.shields.io/badge/语言-java-red.svg)   ![](https://img.shields.io/badge/技术-zookeeper&&rabbitMQ&&redis-green.svg)   ![](https://img.shields.io/badge/依赖-netty&&protobuf-orange.svg)
 
 ## 介绍
 `IMNetty`是一款基于`Netty`的高性能IM即时通讯组件,支持点对点聊天与群聊,支持定制拓展业务,支持分布式多机部署,支持用户添加自定义通讯协议,广泛适用于项目的基础通讯模块
@@ -26,7 +26,8 @@
 
 ## 待完善
 
-- [ ] 统一权限验证网关
+- [x] 整合`SpringBoot`
+- [ ] - [ ] 统一权限验证网关
 - [ ] 优化代码结构提取公共配置
 - [ ] 客户端登陆状态的会话状态`Redis`集群
-- [ ] 整合`SpringBoot`
+
