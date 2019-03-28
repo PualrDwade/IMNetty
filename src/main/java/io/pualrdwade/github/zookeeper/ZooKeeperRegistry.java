@@ -19,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 public class ZooKeeperRegistry implements ServiceRegistry {
 
     private static final int SESSION_TIMEOUT = 5000;
+
     private static final String REGISTRY_PATH = "/IMNetty-Registry";
 
     @Value("${zookeeper.host}")

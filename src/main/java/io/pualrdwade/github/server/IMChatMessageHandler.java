@@ -1,11 +1,13 @@
 package io.pualrdwade.github.server;
 
 import generate.IMnettyChatProtocol.Message;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
 import io.pualrdwade.github.component.ChannelTaskQueue;
 import io.pualrdwade.github.component.SocketRouteMap;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Component;
  *
  * @author PualrDwade
  */
+
+@Sharable
 @Component
 public class IMChatMessageHandler extends SimpleChannelInboundHandler<Message> {
 
@@ -24,10 +28,11 @@ public class IMChatMessageHandler extends SimpleChannelInboundHandler<Message> {
     @Autowired
     private SocketRouteMap socketRouteMap;
 
+    private static Logger logger = Logger.getLogger(IMChatMessageHandler.class);
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("新客户端连接进来了,ip:" + ctx.channel().remoteAddress());
+        logger.info("[Server]:新客户端连接进来了,ip:" + ctx.channel().remoteAddress());
         // 用户连接注册到路由表中,表示用户已经连接
         this.socketRouteMap.put(ctx.channel().remoteAddress().toString(), ctx.channel());
     }
@@ -51,6 +56,6 @@ public class IMChatMessageHandler extends SimpleChannelInboundHandler<Message> {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // 从路由表中删除用户状态
         this.socketRouteMap.remove(ctx.channel().remoteAddress().toString());
-        System.out.println("[Server]用户:" + ctx.channel().remoteAddress() + "退出");
+        logger.info("[Server]:用户" + ctx.channel().remoteAddress() + "退出");
     }
 }

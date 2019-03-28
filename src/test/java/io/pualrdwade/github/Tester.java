@@ -14,6 +14,3 @@ import org.springframework.test.context.junit4.SpringRunner;
 @Rollback
 public abstract class Tester {
 }
-
-
-

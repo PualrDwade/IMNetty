@@ -4,6 +4,7 @@ import com.rabbitmq.client.*;
 import generate.IMnettyChatProtocol.Message;
 import io.pualrdwade.github.core.Handler;
 import io.pualrdwade.github.core.MQClient;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +28,8 @@ public class RabbitClient implements MQClient {
     @Value("${rabbitmq.port}")
     private Integer RABBIT_PORT;
 
+    private static Logger logger = Logger.getLogger(RabbitClient.class);
+
     /**
      * 发布消息到消息队列,作为生产者
      * 基于发布-订阅模型,一个消息可以广播到多个订阅者
@@ -39,7 +42,7 @@ public class RabbitClient implements MQClient {
         Channel channel = connection.createChannel();
         channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
         channel.basicPublish(EXCHANGE_NAME, "", null, requestMessage.toByteArray());
-        System.out.println("发布了聊天消息到消息队列:" + EXCHANGE_NAME);
+        logger.info("[Server]:发布了聊天消息到消息队列:" + EXCHANGE_NAME);
         channel.close();
         connection.close();
     }

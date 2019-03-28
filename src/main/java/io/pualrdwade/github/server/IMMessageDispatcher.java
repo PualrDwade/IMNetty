@@ -6,6 +6,7 @@ import io.netty.util.AttributeKey;
 import io.pualrdwade.github.component.ChannelTaskQueue;
 import io.pualrdwade.github.component.SocketRouteMap;
 import io.pualrdwade.github.core.MQClient;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +41,8 @@ public final class IMMessageDispatcher implements Runnable {
 
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
+    private static Logger logger = Logger.getLogger(IMMessageDispatcher.class);
+
     /**
      * 为消息中心注册连接
      *
@@ -55,17 +58,13 @@ public final class IMMessageDispatcher implements Runnable {
         try {
             while (work) {
                 // take a channel from the channelBlockingQueue in additon to doDispatch
-                System.out.println("Server:try to take channel" + Thread.currentThread().getName());
                 // todo 重构使用消息队列,实现分布式
                 Channel channel = this.channelTaskQueue.take();
                 // begin doDispatch the socket todo 拆分业务模块
-                System.out.println("Server:take channel" + channel);
                 doDispatch(channel);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            System.out.println("Message Center Stopped");
         }
     }
 
@@ -76,10 +75,12 @@ public final class IMMessageDispatcher implements Runnable {
      */
     public void registerChannel(String userId, Channel channel) {
         if (this.socketRouteMap.containsKey(userId)) {
-            throw new IllegalArgumentException("the user is already connected with server");
+            logger.info("[Server]:此ip用户连接已存在!");
+            return;
         }
         if (channel == null) {
-            throw new IllegalArgumentException("channel argument is invalid");
+            logger.info("[Server]:channel 参数错误,不能为null");
+            return;
         }
         this.socketRouteMap.put(userId, channel);
     }
@@ -107,7 +108,7 @@ public final class IMMessageDispatcher implements Runnable {
     private void doDispatch(Channel channel) {
         AttributeKey<IMnettyChatProtocol.Message> attributeKey = AttributeKey.valueOf("message");
         if (!channel.hasAttr(attributeKey)) {
-            System.out.println("channel has no message!");
+            logger.info("[Server]:channel 没有 message!");
             return;
         }
         IMnettyChatProtocol.Message message = channel.attr(attributeKey).get();
@@ -118,7 +119,7 @@ public final class IMMessageDispatcher implements Runnable {
                 try {
                     this.mqClient.publishMessage(message);
                 } catch (Exception e) {
-                    System.out.println("Server:消息:" + message + "推送失败!");
+                    logger.info("[Server]:消息:" + message + "推送失败!");
                 }
             }
             case PING: {
