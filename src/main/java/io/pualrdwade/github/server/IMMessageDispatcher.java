@@ -121,11 +121,8 @@ public final class IMMessageDispatcher implements Runnable {
                     logger.info("[Server]:消息:" + message + "推送失败!");
                 }
             }
-            case PING: {
-            }
-            case UNRECOGNIZED: {
-
-            }
+            case PING: {}
+            case UNRECOGNIZED: {}
         }
     }
 }
