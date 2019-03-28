@@ -28,6 +28,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class IMChatBootStrap {
 
+    public IMChatBootStrap() {
+    }
+
+    // TODO: 2019/3/28 将可配置常量整合到SpringBoot配置
     private static final String ZOOKEEPER_HOST = "120.79.206.32";
 
     //todo 调整阻塞队列的并发量以适应CPU
