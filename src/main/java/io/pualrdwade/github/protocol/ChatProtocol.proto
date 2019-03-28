@@ -1,3 +1,5 @@
+//IM群聊协议
+
 syntax = "proto3";
 // 生成的包名
 option java_package = "generate";

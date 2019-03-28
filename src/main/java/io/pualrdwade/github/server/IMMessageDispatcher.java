@@ -130,8 +130,6 @@ public final class IMMessageDispatcher implements Runnable {
         switch (message.getMessageType()) {
             case CHAT: {
                 try {
-                    //进行消息推送
-                    System.out.println("publish:" + message);
                     this.mqClient.publishMessage(message);
                 } catch (Exception e) {
                     System.out.println("Server:消息:" + message + "推送失败!");

@@ -6,5 +6,7 @@ package io.pualrdwade.github.handler;
  */
 @FunctionalInterface
 public interface Handler<P, R> {
+
     R handle(P param);
+
 }
