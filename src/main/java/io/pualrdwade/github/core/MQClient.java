@@ -1,7 +1,7 @@
-package io.pualrdwade.github.mq;
+package io.pualrdwade.github.core;
 
 import generate.IMnettyChatProtocol;
-import io.pualrdwade.github.handler.Handler;
+import io.pualrdwade.github.core.Handler;
 
 public interface MQClient {
 
@@ -18,5 +18,5 @@ public interface MQClient {
      *
      * @throws Exception
      */
-    void subscribeMessage(Handler<IMnettyChatProtocol.Message, Boolean> handler) throws Exception;
+    void subscribeMessage(Handler<IMnettyChatProtocol.Message> handler) throws Exception;
 }

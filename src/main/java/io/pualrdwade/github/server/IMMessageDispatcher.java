@@ -3,8 +3,8 @@ package io.pualrdwade.github.server;
 import generate.IMnettyChatProtocol;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
-import io.pualrdwade.github.mq.MQClient;
-import io.pualrdwade.github.mq.impl.RabbitClient;
+import io.pualrdwade.github.core.MQClient;
+import io.pualrdwade.github.mq.RabbitClient;
 
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;

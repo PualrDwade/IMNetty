@@ -2,8 +2,8 @@ package io.pualrdwade.github.chat;
 
 import generate.IMnettyChatProtocol.Message;
 import io.netty.channel.Channel;
-import io.pualrdwade.github.mq.MQClient;
-import io.pualrdwade.github.mq.impl.RabbitClient;
+import io.pualrdwade.github.core.MQClient;
+import io.pualrdwade.github.mq.RabbitClient;
 
 import java.util.Map;
 
@@ -43,7 +43,7 @@ public class IMMessageCenter extends Thread {
             mqClient.subscribeMessage(message -> {
                 System.out.println("消息:\n" + message + message.getChatInfo().getContent().toStringUtf8());
                 if (message.getChatInfo() == null) {
-                    return false;
+                    return;
                 }
                 if (message.getChatInfo().getChatType().equals(Message.ChatInfo.ChatType.SINGLE)) {
                     String fromIp = message.getChatInfo().getFromIp();
@@ -56,10 +56,7 @@ public class IMMessageCenter extends Thread {
                     }
                 } else if (message.getChatInfo().getChatType().equals(Message.ChatInfo.ChatType.GROUP)) {
 
-                } else {
-                    return false;//类型不正确
                 }
-                return true;
             });
         } catch (Exception e) {
             e.printStackTrace();

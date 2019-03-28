@@ -1,9 +1,9 @@
-package io.pualrdwade.github.mq.impl;
+package io.pualrdwade.github.mq;
 
 import com.google.protobuf.ByteString;
 import generate.IMnettyChatProtocol.Message;
 import io.netty.util.CharsetUtil;
-import io.pualrdwade.github.mq.MQClient;
+import io.pualrdwade.github.core.MQClient;
 import org.junit.Before;
 import org.junit.Test;
 

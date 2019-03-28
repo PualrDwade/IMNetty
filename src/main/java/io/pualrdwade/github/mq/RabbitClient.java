@@ -1,9 +1,9 @@
-package io.pualrdwade.github.mq.impl;
+package io.pualrdwade.github.mq;
 
 import com.rabbitmq.client.*;
 import generate.IMnettyChatProtocol.Message;
-import io.pualrdwade.github.handler.Handler;
-import io.pualrdwade.github.mq.MQClient;
+import io.pualrdwade.github.core.Handler;
+import io.pualrdwade.github.core.MQClient;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -40,7 +40,7 @@ public class RabbitClient implements MQClient {
      * @throws Exception
      */
     @Override
-    public void subscribeMessage(Handler<Message, Boolean> handler) throws Exception {
+    public void subscribeMessage(Handler<Message> handler) throws Exception {
         Connection connection = getConnection();
         Channel channel = connection.createChannel();
         channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
@@ -52,7 +52,7 @@ public class RabbitClient implements MQClient {
                 //解析消息队列数据
                 Message message = Message.parseFrom(body);
                 //调用回调函数
-                boolean succuess = handler.handle(message);
+                handler.handle(message);
             }
         };
         channel.basicConsume(queueName, true, consumer);
