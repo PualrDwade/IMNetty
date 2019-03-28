@@ -91,7 +91,6 @@ public final class IMMessageDispatcher implements Runnable {
         for (int i = 0; i < DEFAULT_THREAD_NUMBER; ++i) {
             this.executorService.execute(this);
         }
-        System.out.println("MessageCenter Started");
     }
 
     // 关闭消息中心

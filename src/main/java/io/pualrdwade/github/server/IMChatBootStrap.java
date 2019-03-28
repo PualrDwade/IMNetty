@@ -6,10 +6,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.pualrdwade.github.chat.IMMessageCenter;
 import io.pualrdwade.github.core.ServiceRegistry;
-import io.pualrdwade.github.zookeeper.ZooKeeperRegistry;
-import org.apache.log4j.BasicConfigurator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -30,7 +26,7 @@ import java.net.UnknownHostException;
 public final class IMChatBootStrap {
 
     @Value("${imserver.port}")
-    private static int SERVER_PORT;
+    private Integer SERVER_PORT;
 
     @Autowired
     private IMMessageDispatcher messageDispatcher; //消息中央派发器
@@ -41,15 +37,14 @@ public final class IMChatBootStrap {
     @Autowired
     private IMChannelInitializer channelInitializer; //通道初始化器
 
-    private static Logger logger = LoggerFactory.getLogger(ZooKeeperRegistry.class);
+    @Autowired
+    private ServiceRegistry serviceRegistry;//服务注册中心服务接口
 
     @PostConstruct
     public void start() throws InterruptedException, UnknownHostException {
-        BasicConfigurator.configure();
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup workers = new NioEventLoopGroup();
         try {
-            ServiceRegistry serviceRegistry = new ZooKeeperRegistry();
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.group(boss, workers);
             serverBootstrap.channel(NioServerSocketChannel.class);

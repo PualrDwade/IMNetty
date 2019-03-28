@@ -25,7 +25,7 @@ public class RabbitClient implements MQClient {
     private String RABBIT_HOST;
 
     @Value("${rabbitmq.port}")
-    private int RABBIT_PORT;
+    private Integer RABBIT_PORT;
 
     /**
      * 发布消息到消息队列,作为生产者

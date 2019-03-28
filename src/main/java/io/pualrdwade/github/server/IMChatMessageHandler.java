@@ -27,7 +27,6 @@ public class IMChatMessageHandler extends SimpleChannelInboundHandler<Message> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("server:" + Thread.currentThread().getName());
         System.out.println("新客户端连接进来了,ip:" + ctx.channel().remoteAddress());
         // 用户连接注册到路由表中,表示用户已经连接
         this.socketRouteMap.put(ctx.channel().remoteAddress().toString(), ctx.channel());

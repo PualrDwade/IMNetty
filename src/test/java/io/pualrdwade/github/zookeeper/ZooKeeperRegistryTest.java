@@ -1,22 +1,17 @@
 package io.pualrdwade.github.zookeeper;
 
+import io.pualrdwade.github.Tester;
 import io.pualrdwade.github.core.ServiceRegistry;
-import org.apache.log4j.BasicConfigurator;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class ZooKeeperRegistryTest {
+public class ZooKeeperRegistryTest extends Tester {
 
+    @Autowired
     ServiceRegistry serviceRegistry;
-
-    @Before
-    public void setUp() {
-        BasicConfigurator.configure();
-        serviceRegistry = new ZooKeeperRegistry();
-    }
 
     @Test
     public void registerForRight() throws UnknownHostException {

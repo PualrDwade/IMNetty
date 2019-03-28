@@ -27,7 +27,7 @@ public class Client {
 
     private static final String SERVER_HOST = "localhost";
 
-    private static final int SERVER_PORT = 8989;
+    private static final int SERVER_PORT = 9999;
 
     /**
      * 客户端启动方法

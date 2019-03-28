@@ -31,7 +31,6 @@ public class IMMessageCenter extends Thread {
     public synchronized void start() {
         this.work = true;
         super.start();
-        System.out.println("MessageDispatcher started!");
     }
 
     @Override

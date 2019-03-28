@@ -3,20 +3,17 @@ package io.pualrdwade.github.mq;
 import com.google.protobuf.ByteString;
 import generate.IMnettyChatProtocol.Message;
 import io.netty.util.CharsetUtil;
+import io.pualrdwade.github.Tester;
 import io.pualrdwade.github.core.MQClient;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 
-public class RabbitClientTest {
+public class RabbitClientTest extends Tester {
 
+    @Autowired
     private MQClient mqClient;
-
-    @Before
-    public void setUp() {
-        mqClient = new RabbitClient();
-    }
 
     @Test
     public void publishMessageForRight() throws Exception {

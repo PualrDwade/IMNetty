@@ -1,8 +1,6 @@
 package io.pualrdwade.github.component;
 
 import io.netty.channel.Channel;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -14,14 +12,13 @@ import java.util.concurrent.BlockingQueue;
  * @author PualrDwade
  */
 
-@Component
 public class ChannelTaskQueue {
 
-    // 任务队列的大小,用于进行拥塞并发量控制
-    @Value("${imserver.queuesize}")
-    private int QUEUE_SIZE;
+    public ChannelTaskQueue(int size) {
+        blockingQueue = new ArrayBlockingQueue<>(size);
+    }
 
-    private BlockingQueue<Channel> blockingQueue = new ArrayBlockingQueue<>(QUEUE_SIZE);
+    private BlockingQueue<Channel> blockingQueue;
 
     /**
      * 从队列中获取一个任务进行调度
