@@ -1,37 +1,36 @@
 package io.pualrdwade.github.server;
 
 import generate.IMnettyChatProtocol.Message;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
-
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
+import io.pualrdwade.github.component.ChannelTaskQueue;
+import io.pualrdwade.github.component.SocketRouteMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
- * 客户端连接器,作为消息生产者
+ * 客户端连接处理器,作为消息生产者
+ * IO线程的主要负责类,唯一的职责就是进行IO操作,监听事件
  *
  * @author PualrDwade
  */
+@Component
 public class IMChatMessageHandler extends SimpleChannelInboundHandler<Message> {
 
-    private BlockingQueue<Channel> chanelTaskQueue = null;
+    @Autowired
+    private ChannelTaskQueue channelTaskQueue;
 
-    private Map<String, Channel> routingMap = null;
+    @Autowired
+    private SocketRouteMap socketRouteMap;
 
-    // TODO: 2019/3/26 使用依赖注入框架重构注入部分
-    public IMChatMessageHandler(BlockingQueue<Channel> chanelTaskQueue, Map<String, Channel> routingMap) {
-        this.chanelTaskQueue = chanelTaskQueue;
-        this.routingMap = routingMap;
-    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("server:" + Thread.currentThread().getName());
         System.out.println("新客户端连接进来了,ip:" + ctx.channel().remoteAddress());
         // 用户连接注册到路由表中,表示用户已经连接
-        routingMap.put(ctx.channel().remoteAddress().toString(), ctx.channel());
+        this.socketRouteMap.put(ctx.channel().remoteAddress().toString(), ctx.channel());
     }
 
     @Override
@@ -40,7 +39,7 @@ public class IMChatMessageHandler extends SimpleChannelInboundHandler<Message> {
         AttributeKey<Message> attributeKey = AttributeKey.valueOf("message");
         channelHandlerContext.channel().attr(attributeKey).set(message);//可能覆盖掉之前的
         // 添加进入生产者-消费者队列
-        chanelTaskQueue.put(channelHandlerContext.channel());
+        this.channelTaskQueue.put(channelHandlerContext.channel());
     }
 
     @Override
@@ -52,7 +51,7 @@ public class IMChatMessageHandler extends SimpleChannelInboundHandler<Message> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // 从路由表中删除用户状态
-        routingMap.remove(ctx.channel().remoteAddress().toString());
+        this.socketRouteMap.remove(ctx.channel().remoteAddress().toString());
         System.out.println("[Server]用户:" + ctx.channel().remoteAddress() + "退出");
     }
 }

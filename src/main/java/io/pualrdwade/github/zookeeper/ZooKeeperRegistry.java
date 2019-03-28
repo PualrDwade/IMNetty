@@ -7,6 +7,8 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -15,18 +17,21 @@ import java.util.concurrent.CountDownLatch;
  *
  * @author PualrDwade
  */
+@Component
 public class ZooKeeperRegistry implements ServiceRegistry {
 
     private static Logger logger = LoggerFactory.getLogger(ZooKeeperRegistry.class);
     private static CountDownLatch latch = new CountDownLatch(1);
     private ZooKeeper zk;
     private static final int SESSION_TIMEOUT = 5000;
-    private static final String ZK_HOST = "120.79.206.32";
     private static final String REGISTRY_PATH = "/IMNetty-Registry";
+
+    @Value("${zookeeper.host}")
+    private static String ZOOKEEPER_HOST;
 
     public ZooKeeperRegistry() {
         try {
-            zk = new ZooKeeper(ZK_HOST, SESSION_TIMEOUT, watchedEvent -> {
+            zk = new ZooKeeper(ZOOKEEPER_HOST, SESSION_TIMEOUT, watchedEvent -> {
                 if (watchedEvent.getState() == Watcher.Event.KeeperState.SyncConnected)
                     latch.countDown();
             });

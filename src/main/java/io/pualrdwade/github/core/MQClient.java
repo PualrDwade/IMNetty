@@ -1,7 +1,6 @@
 package io.pualrdwade.github.core;
 
 import generate.IMnettyChatProtocol;
-import io.pualrdwade.github.core.Handler;
 
 public interface MQClient {
 

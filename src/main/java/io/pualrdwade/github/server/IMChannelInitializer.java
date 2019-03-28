@@ -1,33 +1,28 @@
 package io.pualrdwade.github.server;
 
 import generate.IMnettyChatProtocol.Message;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * 服务器通道初始化器
+ * 使用Spring容器管理依赖关系
+ * 核心之策是控制数据协议编码解码
  *
  * @author PualrDwade
  */
+@Component
 public final class IMChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    private BlockingQueue<Channel> chanelTaskQueue = null;
+    @Autowired
+    private IMChatMessageHandler messageHandler;// 消息IO处理器
 
-    private Map<String, Channel> routingMap = null;
-
-    // TODO: 2019/3/26 使用依赖注入框架重构注入部分
-    public IMChannelInitializer(BlockingQueue<Channel> chanelTaskQueue, Map<String, Channel> routingMap) {
-        this.chanelTaskQueue = chanelTaskQueue;
-        this.routingMap = routingMap;
-    }
 
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
@@ -37,6 +32,6 @@ public final class IMChannelInitializer extends ChannelInitializer<SocketChannel
                 .addLast(new ProtobufDecoder(Message.getDefaultInstance()))
                 .addLast(new ProtobufVarint32LengthFieldPrepender())
                 .addLast(new ProtobufEncoder())
-                .addLast(new IMChatMessageHandler(this.chanelTaskQueue, this.routingMap));
+                .addLast(messageHandler);
     }
 }

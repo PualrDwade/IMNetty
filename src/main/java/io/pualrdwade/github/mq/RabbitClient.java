@@ -4,17 +4,28 @@ import com.rabbitmq.client.*;
 import generate.IMnettyChatProtocol.Message;
 import io.pualrdwade.github.core.Handler;
 import io.pualrdwade.github.core.MQClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * 注册为bean,使用Spring容器管理
+ *
+ * @author PualrDwade
+ */
+@Component
 public class RabbitClient implements MQClient {
 
-    private static final String EXCHANGE_NAME = "IMNettyChatTask";
+    @Value("${rabbitmq.queuename}")
+    private String EXCHANGE_NAME;
 
-    private static final String RABBIT_HOST = "120.79.206.32";
+    @Value("${rabbitmq.host}")
+    private String RABBIT_HOST;
 
-    private static final int RABBIT_PORT = 35530;
+    @Value("${rabbitmq.port}")
+    private int RABBIT_PORT;
 
     /**
      * 发布消息到消息队列,作为生产者

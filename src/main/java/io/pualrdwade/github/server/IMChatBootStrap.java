@@ -1,7 +1,6 @@
 package io.pualrdwade.github.server;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -11,64 +10,56 @@ import io.pualrdwade.github.zookeeper.ZooKeeperRegistry;
 import org.apache.log4j.BasicConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- * 聊天服务,单机版本实现
+ * 服务器启动类,注册为Bean让Spring容器进行管理
  *
  * @author PualrDwade
- * @version 1.0
+ * @version 2.0
  */
+
+@Component
 public final class IMChatBootStrap {
 
-    public IMChatBootStrap() {
-    }
+    @Value("${imserver.port}")
+    private static int SERVER_PORT;
 
-    // TODO: 2019/3/28 将可配置常量整合到SpringBoot配置
-    private static final String ZOOKEEPER_HOST = "120.79.206.32";
+    @Autowired
+    private IMMessageDispatcher messageDispatcher; //消息中央派发器
 
-    //todo 调整阻塞队列的并发量以适应CPU
-    private static final int CONCURRENCY = 10000;
+    @Autowired
+    private IMMessageCenter messageCenter; //聊天消息中心
+
+    @Autowired
+    private IMChannelInitializer channelInitializer; //通道初始化器
 
     private static Logger logger = LoggerFactory.getLogger(ZooKeeperRegistry.class);
 
-    public static void main(String[] args) throws InterruptedException, UnknownHostException {
-        int PORT;
-        if (args.length == 0) {
-            PORT = 9999;
-        } else {
-            // 绑定端口
-            PORT = Integer.parseInt(args[0]);
-        }
+    @PostConstruct
+    public void start() throws InterruptedException, UnknownHostException {
         BasicConfigurator.configure();
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup workers = new NioEventLoopGroup();
-        // 使用消息队列进行解耦,一方面可以解放IO线程与业务线程,还可以提高吞吐量
-        BlockingQueue<Channel> chanelTaskQueue = new ArrayBlockingQueue<>(CONCURRENCY);
-        IMMessageDispatcher messageDispatcher = new IMMessageDispatcher(chanelTaskQueue);
-        //userId->channel映射,充当路由表
-        // 消息中心用来记录连接到此服务器的用户
-        Map<String, Channel> routingMap = new ConcurrentHashMap<>();
-        IMMessageCenter messageCenter = new IMMessageCenter(routingMap);
         try {
             ServiceRegistry serviceRegistry = new ZooKeeperRegistry();
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.group(boss, workers);
             serverBootstrap.channel(NioServerSocketChannel.class);
-            serverBootstrap.childHandler(new IMChannelInitializer(chanelTaskQueue, routingMap));
+            serverBootstrap.childHandler(channelInitializer);
             messageDispatcher.start();
             messageCenter.start();
-            serverBootstrap.bind(PORT).addListener(future -> {
+            serverBootstrap.bind(SERVER_PORT).addListener(future -> {
                 if (future.isSuccess()) {
                     // 成功启动服务器之后注册到服务中心
-                    serviceRegistry.register("IMNetty", InetAddress.getLocalHost().getHostAddress() + ":" + PORT);
+                    serviceRegistry.register("IMNetty", InetAddress.getLocalHost().getHostAddress() + ":" + SERVER_PORT);
                 }
             }).sync().channel().closeFuture().sync();
         } finally {

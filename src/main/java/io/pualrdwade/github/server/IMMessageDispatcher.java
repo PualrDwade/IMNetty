@@ -3,12 +3,12 @@ package io.pualrdwade.github.server;
 import generate.IMnettyChatProtocol;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
+import io.pualrdwade.github.component.ChannelTaskQueue;
+import io.pualrdwade.github.component.SocketRouteMap;
 import io.pualrdwade.github.core.MQClient;
-import io.pualrdwade.github.mq.RabbitClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,37 +21,24 @@ import java.util.concurrent.Executors;
  * @author PualrDwade
  * @crate 2019-2-2
  */
+@Component
 public final class IMMessageDispatcher implements Runnable {
 
-    //use the system kernel predict the initializee the thread number
-    private static final int DEFAULT_THREAD_NUMBER = Runtime.getRuntime().availableProcessors();
+    @Autowired
+    private ChannelTaskQueue channelTaskQueue;
 
-    private int nthread;
+    @Autowired
+    private MQClient mqClient; //注入消息队列操作类
+
+    @Autowired
+    private SocketRouteMap socketRouteMap;
+
+    //use the system kernel predict the initializee the thread number
+    private final int DEFAULT_THREAD_NUMBER = Runtime.getRuntime().availableProcessors();
 
     private volatile boolean work = false;
 
-    //生产者-消费者模型解耦
-    private BlockingQueue<Channel> channelBlockingQueue = null;
-
-    private ExecutorService executorService;
-
-    //key:ip value:SocketChannel
-    private Map<String, Channel> socketChannelMap = null;
-
-    public IMMessageDispatcher(BlockingQueue<Channel> channelBlockingQueue) {
-        this(channelBlockingQueue, DEFAULT_THREAD_NUMBER);
-    }
-
-    private MQClient mqClient;
-
-    public IMMessageDispatcher(BlockingQueue<Channel> channelBlockingQueue, int nthread) {
-        this.channelBlockingQueue = channelBlockingQueue;
-        this.socketChannelMap = new ConcurrentHashMap<>(); //使用并发哈希映射
-        this.nthread = nthread;
-        this.executorService = Executors.newCachedThreadPool();
-        // TODO: 2019/3/26 整合Spring消除耦合,对bean进行容器托管
-        this.mqClient = new RabbitClient();
-    }
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     /**
      * 为消息中心注册连接
@@ -60,7 +47,7 @@ public final class IMMessageDispatcher implements Runnable {
      * @throws InterruptedException
      */
     public void putChannel(Channel channel) throws InterruptedException {
-        this.channelBlockingQueue.put(channel);
+        this.channelTaskQueue.put(channel);
     }
 
     @Override
@@ -70,7 +57,7 @@ public final class IMMessageDispatcher implements Runnable {
                 // take a channel from the channelBlockingQueue in additon to doDispatch
                 System.out.println("Server:try to take channel" + Thread.currentThread().getName());
                 // todo 重构使用消息队列,实现分布式
-                Channel channel = this.channelBlockingQueue.take();
+                Channel channel = this.channelTaskQueue.take();
                 // begin doDispatch the socket todo 拆分业务模块
                 System.out.println("Server:take channel" + channel);
                 doDispatch(channel);
@@ -83,25 +70,25 @@ public final class IMMessageDispatcher implements Runnable {
     }
 
     /**
-     * 将channel注册进入map,作为观察者
+     * 将channel注册进入map
      *
      * @param channel
      */
     public void registerChannel(String userId, Channel channel) {
-        if (socketChannelMap.containsKey(userId)) {
+        if (this.socketRouteMap.containsKey(userId)) {
             throw new IllegalArgumentException("the user is already connected with server");
         }
         if (channel == null) {
             throw new IllegalArgumentException("channel argument is invalid");
         }
-        socketChannelMap.put(userId, channel);
+        this.socketRouteMap.put(userId, channel);
     }
 
 
     //启动消息中心
     public void start() {
         this.work = true;
-        for (int i = 0; i < this.nthread; ++i) {
+        for (int i = 0; i < DEFAULT_THREAD_NUMBER; ++i) {
             this.executorService.execute(this);
         }
         System.out.println("MessageCenter Started");

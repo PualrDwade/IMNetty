@@ -1,0 +1,17 @@
+imserver:
+    #    服务器Socket端口
+    port: 9999
+    # 工作线程生产者-消费者队列大小
+    queuesize: 10000
+
+
+zookeeer:
+    #    服务发现中心host
+    host: "120.79.206.32"
+
+
+rabbitmq:
+    #    消息队列host
+    host: "120.79.206.32"
+    queuename: "IMNettyChatTask"
+    port: 35530
