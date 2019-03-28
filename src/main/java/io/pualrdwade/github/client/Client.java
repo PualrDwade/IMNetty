@@ -3,10 +3,7 @@ package io.pualrdwade.github.client;
 import com.google.protobuf.ByteString;
 import generate.IMnettyChatProtocol.Message;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -18,25 +15,27 @@ import io.netty.util.CharsetUtil;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Scanner;
 
-public class Client implements Runnable {
-
+public class Client {
 
     private int port;
 
-    public Client(int port) {
+    Client(int port) {
         this.port = port;
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        // 设置端口
-        if (args != null && args.length != 0) {
-            String userIp = args[0];
-            new Thread(new Client(Integer.parseInt(userIp))).start();
-        }
-    }
+    private static final String SERVER_HOST = "localhost";
 
-    public void run() {
+    private static final int SERVER_PORT = 8989;
+
+    /**
+     * 客户端启动方法
+     *
+     * @return
+     * @throws InterruptedException
+     */
+    public ChannelFuture start() throws InterruptedException {
         EventLoopGroup client = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(client).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() {
@@ -55,31 +54,49 @@ public class Client implements Runnable {
                                 System.out.println("[Client]收到来自用户:" + message.getChatInfo().getFromIp()
                                         + "的消息:" + message.getChatInfo().getContent().toStringUtf8());
                             }
-
-                            @Override
-                            public void channelActive(ChannelHandlerContext ctx) throws Exception {
-                                super.channelActive(ctx);
-                                String content = "你好!我是新来的!";
-                                System.out.println("[Client]:和服务端建立连接,发送消息给客户端:" + content);
-                                Message message = Message.newBuilder()
-                                        .setMessageType(Message.MessageType.CHAT)
-                                        .setChatInfo(Message.ChatInfo.newBuilder()
-                                                .setChatType(Message.ChatInfo.ChatType.SINGLE)
-                                                .setContent(ByteString.copyFrom(content, CharsetUtil.UTF_8))
-                                                .setTimespace(new Date().getTime())
-                                                .setFromIp(ctx.channel().localAddress().toString())
-                                                .addToIp(ctx.channel().localAddress().toString()) //给自己发消息
-                                                .setContentType(Message.ChatInfo.ContentType.TEXT)
-                                                .build()).build();
-                                ctx.channel().writeAndFlush(message);
-                            }
                         });
             }
         });
-        try {
-            bootstrap.localAddress(port).connect("localhost", 8989).sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        return bootstrap.localAddress(port).connect(SERVER_HOST, SERVER_PORT).sync();
+    }
+
+    public static void main(String[] args) throws IOException, InterruptedException {
+        if (args.length != 1) {
+            System.out.println("非法启动参数");
+            return;
         }
+        int port = Integer.parseInt(args[0]);
+        Client client = new Client(port);
+        ChannelFuture channelFuture = client.start(); //初始化客户端
+        channelFuture.addListener(future -> {
+            if (future.isSuccess()) {
+                //启动界面线程
+                new Thread(() -> {
+                    System.out.println("...............欢迎进入IMNetty终端对点网络....................");
+                    Channel channel = channelFuture.channel();
+                    Scanner scanner = new Scanner(System.in);
+                    System.out.println("请输入发送目标的ip地址与端口:例如:[/127.0.0.1:8866]");
+                    while (scanner.hasNext()) {
+                        String toIp = scanner.nextLine();
+                        System.out.println("请输入需要发送的内容");
+                        String content = scanner.nextLine();
+                        Message message = Message.newBuilder()
+                                .setMessageType(Message.MessageType.CHAT)
+                                .setChatInfo(Message.ChatInfo.newBuilder()
+                                        .setChatType(Message.ChatInfo.ChatType.SINGLE)
+                                        .setContent(ByteString.copyFrom(content, CharsetUtil.UTF_8))
+                                        .setTimespace(new Date().getTime())
+                                        .setFromIp(channel.localAddress().toString())
+                                        .addToIp(toIp) // TODO: 2019/3/27 优化代码
+                                        .setContentType(Message.ChatInfo.ContentType.TEXT)
+                                        .build()).build();
+                        channel.writeAndFlush(message);
+                        System.out.println("请输入发送目标的ip地址与端口:例如:[/127.0.0.1:8866]");
+                    }
+                }).start();
+            } else {
+                future.cause();
+            }
+        });
     }
 }
