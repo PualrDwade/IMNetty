@@ -46,13 +46,13 @@ public class IMMessageCenter extends Thread {
                     return false;
                 }
                 if (message.getChatInfo().getChatType().equals(Message.ChatInfo.ChatType.SINGLE)) {
-                    String userId = message.getChatInfo().getFromIp();
-                    String toUserId = message.getChatInfo().getToIp(0);
+                    String fromIp = message.getChatInfo().getFromIp();
+                    String toIp = message.getChatInfo().getToIp(0);
                     //判断toUser是否在与user在同一个服务器,在的话就处理,不在就不管了
-                    if (this.routingMap.containsKey(toUserId)) {
-                        Channel toUserChannel = this.routingMap.get(toUserId);
+                    if (this.routingMap.containsKey(toIp)) {
+                        Channel toUserChannel = this.routingMap.get(toIp);
                         toUserChannel.writeAndFlush(message);
-                        System.out.println("Server:用户[" + userId + "]向用户[" + toUserId + "]发送消息:" + message.getChatInfo().getContent().toStringUtf8());
+                        System.out.println("Server:用户[" + fromIp + "]向用户[" + toIp + "]发送消息:" + message.getChatInfo().getContent().toStringUtf8());
                     }
                 } else if (message.getChatInfo().getChatType().equals(Message.ChatInfo.ChatType.GROUP)) {
 
