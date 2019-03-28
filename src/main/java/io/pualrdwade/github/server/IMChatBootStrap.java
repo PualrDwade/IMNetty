@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author PualrDwade
  * @version 1.0
  */
-public final class IMChatServer {
+public final class IMChatBootStrap {
 
     private static final String ZOOKEEPER_HOST = "120.79.206.32";
 
