@@ -20,6 +20,6 @@ public class ZooKeeperRegistryTest {
 
     @Test
     public void registerForRight() throws UnknownHostException {
-        serviceRegistry.register("test service", InetAddress.getLocalHost().getHostAddress());
+        serviceRegistry.register("IMNetty", InetAddress.getLocalHost().getHostAddress());
     }
 }

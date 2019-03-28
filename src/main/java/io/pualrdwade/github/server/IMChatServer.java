@@ -30,14 +30,19 @@ public final class IMChatServer {
 
     private static final String ZOOKEEPER_HOST = "120.79.206.32";
 
-    private static final int PORT = 8989;
-
     //todo 调整阻塞队列的并发量以适应CPU
     private static final int CONCURRENCY = 10000;
 
     private static Logger logger = LoggerFactory.getLogger(ZooKeeperRegistry.class);
 
     public static void main(String[] args) throws InterruptedException, UnknownHostException {
+        int PORT;
+        if (args.length == 0) {
+            PORT = 9999;
+        } else {
+            // 绑定端口
+            PORT = Integer.parseInt(args[0]);
+        }
         BasicConfigurator.configure();
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup workers = new NioEventLoopGroup();
@@ -49,16 +54,19 @@ public final class IMChatServer {
         Map<String, Channel> routingMap = new ConcurrentHashMap<>();
         IMMessageCenter messageCenter = new IMMessageCenter(routingMap);
         try {
-            //启动之前首先注册到服务注册中心
             ServiceRegistry serviceRegistry = new ZooKeeperRegistry();
-            serviceRegistry.register("IMNetty", InetAddress.getLocalHost().getHostAddress() + ":" + PORT);
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.group(boss, workers);
             serverBootstrap.channel(NioServerSocketChannel.class);
             serverBootstrap.childHandler(new IMChannelInitializer(chanelTaskQueue, routingMap));
             messageDispatcher.start();
             messageCenter.start();
-            serverBootstrap.bind(8989).sync().channel().closeFuture().sync();
+            serverBootstrap.bind(PORT).addListener(future -> {
+                if (future.isSuccess()) {
+                    // 成功启动服务器之后注册到服务中心
+                    serviceRegistry.register("IMNetty", InetAddress.getLocalHost().getHostAddress() + ":" + PORT);
+                }
+            }).sync().channel().closeFuture().sync();
         } finally {
             boss.shutdownGracefully();
             workers.shutdownGracefully();
