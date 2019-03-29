@@ -40,7 +40,7 @@ public class IMMessageCenter extends Thread {
     public void run() {
         try {
             mqClient.subscribeMessage(message -> {
-                logger.info("[Server]:订阅到消息:\n");
+                logger.info("[Server]:订阅到消息:" + message);
                 if (message.getChatInfo() == null) {
                     return;
                 }

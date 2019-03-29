@@ -6,6 +6,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.pualrdwade.github.chat.IMMessageCenter;
 import io.pualrdwade.github.core.ServiceRegistry;
+import org.apache.log4j.BasicConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -40,8 +41,12 @@ public final class IMChatBootStrap {
     @Autowired
     private ServiceRegistry serviceRegistry;//服务注册中心服务接口
 
+    @Value("${imserver.servicename}")
+    private String SERVICE_NAME;
+
     @PostConstruct
     public void start() throws InterruptedException, UnknownHostException {
+        BasicConfigurator.configure();
         EventLoopGroup boss = new NioEventLoopGroup();
         EventLoopGroup workers = new NioEventLoopGroup();
         try {
@@ -54,7 +59,7 @@ public final class IMChatBootStrap {
             serverBootstrap.bind(SERVER_PORT).addListener(future -> {
                 if (future.isSuccess()) {
                     // 成功启动服务器之后注册到服务中心
-                    serviceRegistry.register("IMNetty", InetAddress.getLocalHost().getHostAddress() + ":" + SERVER_PORT);
+                    serviceRegistry.register(SERVICE_NAME, InetAddress.getLocalHost().getHostAddress() + ":" + SERVER_PORT);
                 }
             }).sync().channel().closeFuture().sync();
         } finally {
