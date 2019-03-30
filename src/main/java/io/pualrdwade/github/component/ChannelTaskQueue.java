@@ -38,5 +38,4 @@ public class ChannelTaskQueue {
     public void put(Channel channel) throws InterruptedException {
         this.blockingQueue.put(channel);
     }
-
 }

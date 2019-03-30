@@ -7,6 +7,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.pualrdwade.github.chat.IMMessageCenter;
 import io.pualrdwade.github.core.ServiceRegistry;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,8 @@ public final class IMChatBootStrap {
     @Autowired
     private ServiceRegistry serviceRegistry;//服务注册中心服务接口
 
+    private static Logger logger = Logger.getLogger(IMChatBootStrap.class);
+
     @Value("${imserver.servicename}")
     private String SERVICE_NAME;
 
@@ -60,6 +63,7 @@ public final class IMChatBootStrap {
                 if (future.isSuccess()) {
                     // 成功启动服务器之后注册到服务中心
                     serviceRegistry.register(SERVICE_NAME, InetAddress.getLocalHost().getHostAddress() + ":" + SERVER_PORT);
+                    logger.info("Server listened on " + SERVER_PORT);
                 }
             }).sync().channel().closeFuture().sync();
         } finally {
