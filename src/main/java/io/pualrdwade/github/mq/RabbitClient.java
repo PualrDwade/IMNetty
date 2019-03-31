@@ -1,14 +1,17 @@
 package io.pualrdwade.github.mq;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.rabbitmq.client.*;
 import generate.IMnettyChatProtocol.Message;
 import io.pualrdwade.github.core.Handler;
 import io.pualrdwade.github.core.MQClient;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -27,6 +30,9 @@ public class RabbitClient implements MQClient {
 
     @Value("${rabbitmq.port}")
     private Integer RABBIT_PORT;
+
+    @Autowired
+    private ExecutorService workerThreadPool;
 
     private static Logger logger = Logger.getLogger(RabbitClient.class);
 
@@ -63,10 +69,16 @@ public class RabbitClient implements MQClient {
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                //解析消息队列数据
-                Message message = Message.parseFrom(body);
-                //调用回调函数
-                handler.handle(message);
+                // 使用工作线程池执行
+                workerThreadPool.execute(() -> {
+                    //解析消息队列数据
+                    try {
+                        Message message = Message.parseFrom(body);
+                        handler.handle(message);
+                    } catch (InvalidProtocolBufferException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
         };
         channel.basicConsume(queueName, true, consumer);

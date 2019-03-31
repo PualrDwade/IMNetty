@@ -10,9 +10,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 /**
  * 消息中心,进行消息的接受与分发处理
  * 观察者模式实现,同时作为内部队列的消费者
@@ -23,7 +20,7 @@ import java.util.concurrent.Executors;
  * @crate 2019-2-2
  */
 @Component
-public final class IMMessageDispatcher implements Runnable {
+public final class IMMessageDispatcher extends Thread {
 
     @Autowired
     private ChannelTaskQueue channelTaskQueue;
@@ -34,12 +31,7 @@ public final class IMMessageDispatcher implements Runnable {
     @Autowired
     private SocketRouteMap socketRouteMap;
 
-    //use the system kernel predict the initializee the thread number
-    private final int DEFAULT_THREAD_NUMBER = Runtime.getRuntime().availableProcessors();
-
     private volatile boolean work = false;
-
-    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     private static Logger logger = Logger.getLogger(IMMessageDispatcher.class);
 
@@ -86,14 +78,6 @@ public final class IMMessageDispatcher implements Runnable {
     }
 
 
-    //启动消息中心
-    public void start() {
-        this.work = true;
-        for (int i = 0; i < DEFAULT_THREAD_NUMBER; ++i) {
-            this.executorService.execute(this);
-        }
-    }
-
     // 关闭消息中心
     public void shutdownGracefully() {
         this.work = false;
@@ -121,8 +105,10 @@ public final class IMMessageDispatcher implements Runnable {
                     logger.info("[Server]:消息:" + message + "推送失败!");
                 }
             }
-            case PING: {}
-            case UNRECOGNIZED: {}
+            case PING: {
+            }
+            case UNRECOGNIZED: {
+            }
         }
     }
 }
