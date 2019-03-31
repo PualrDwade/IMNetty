@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 /**
  * 消息订阅中心,从消息队列中拿到订阅的消息,发送给用户
  * IMNetty即时通讯的核心组件
- * 使用Spring容器管理其声明周期
+ * 使用Spring容器管理其生命周期
  *
  * @author PualrDwade
  * @create 2019-2-3
